@@ -1,14 +1,42 @@
 import os
+import sys
+import subprocess
 import threading
 import tkinter as tk
 import webview
 from PIL import Image, ImageTk
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+VENV_PYTHON = os.path.join(SCRIPT_DIR, ".venv", "Scripts", "python.exe")
 SPLASH_IMAGE = os.path.join(SCRIPT_DIR, "LoyalBear.png")
 
 
-def main():
+def _bootstrap():
+    """Create venv + install deps if needed, then relaunch under the venv Python."""
+    if not os.path.isfile(VENV_PYTHON):
+        print("Creating virtual environment...")
+        subprocess.run([sys.executable, "-m", "venv", ".venv"], cwd=SCRIPT_DIR, check=True)
+        print("Installing torch - CPU (this may take a few minutes)...")
+        subprocess.run(
+            [VENV_PYTHON, "-m", "pip", "install",
+             "--index-url", "https://pypi.org/simple", "torch", "torchvision"],
+            cwd=SCRIPT_DIR, check=True,
+        )
+        print("Installing dependencies...")
+        subprocess.run(
+            [VENV_PYTHON, "-m", "pip", "install",
+             "--index-url", "https://pypi.org/simple",
+             "-r", os.path.join(SCRIPT_DIR, "requirements.txt")],
+            cwd=SCRIPT_DIR, check=True,
+        )
+
+    if sys.executable.lower() != VENV_PYTHON.lower():
+        print("Relaunching with venv Python...")
+        os.execv(VENV_PYTHON, [VENV_PYTHON, os.path.abspath(__file__)])
+
+
+def _show_splash_and_wait():
+    """Show the splash with status text; returns True if model loaded OK."""
     root = tk.Tk()
     root.overrideredirect(True)
     root.configure(bg="#0d0d1a")
@@ -45,22 +73,34 @@ def main():
     y = (screen_h - win_h) // 2
     root.geometry(f"{win_w}x{win_h}+{x}+{y}")
 
-    model_ok = [False]
+    result = {"ok": False, "error": ""}
 
     def _status(msg):
         status_var.set(msg)
         root.update_idletasks()
 
     def _load():
-        from src.gui import load_model_on_startup
-        _status("Loading pipeline...")
-        model_ok[0] = load_model_on_startup()
+        try:
+            from src.gui import load_model_on_startup
+            _status("Loading pipeline...")
+            result["ok"] = load_model_on_startup()
+            if not result["ok"]:
+                result["error"] = "Model failed to load"
+        except Exception as e:
+            result["ok"] = False
+            result["error"] = str(e)
         root.after(0, root.destroy)
 
     threading.Thread(target=_load, daemon=True).start()
     root.mainloop()
+    return result["ok"], result["error"]
 
-    if not model_ok[0]:
+
+def main():
+    ok, error = _show_splash_and_wait()
+    if not ok:
+        print(f"Failed to load model: {error}")
+        input("Press Enter to exit...")
         return
 
     from src.gui import build_ui, THEME, CSS
@@ -80,4 +120,5 @@ def main():
 
 
 if __name__ == "__main__":
+    _bootstrap()
     main()

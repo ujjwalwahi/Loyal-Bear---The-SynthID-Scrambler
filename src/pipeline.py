@@ -11,7 +11,7 @@ logging.getLogger("diffusers").setLevel(logging.ERROR)
 
 NEGATIVE_PROMPT = "ugly, blurry, low quality, deformed, bad anatomy, watermark, text"
 MODEL_FILENAME = "epicrealismXL_pureFix.safetensors"
-MODEL_URL = "https://huggingface.co/emilianJR/epicrealismXL_pureFix/resolve/main/epicrealismXL_pureFix.safetensors"
+MODEL_REPO = "phuaqu/zimage111"
 
 
 def _download_model(path: str, cb=None):
@@ -23,10 +23,9 @@ def _download_model(path: str, cb=None):
         cb("Downloading model (~6.9 GB)...")
 
     huggingface_hub.hf_hub_download(
-        repo_id="emilianJR/epicrealismXL_pureFix",
+        repo_id=MODEL_REPO,
         filename=MODEL_FILENAME,
         local_dir=os.path.dirname(path),
-        local_dir_use_symlinks=False,
         resume_download=True,
     )
 
