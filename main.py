@@ -7,23 +7,46 @@ VENV_PYTHON = os.path.join(SCRIPT_DIR, ".venv", "Scripts", "python.exe")
 SPLASH_IMAGE = os.path.join(SCRIPT_DIR, "LoyalBear.png")
 
 
+def _deps_installed():
+    """Check the key packages are importable from the venv."""
+    code = (
+        "import importlib.util, sys; "
+        "mods = ['gradio', 'diffusers', 'torch', 'webview', 'PIL']; "
+        "missing = [m for m in mods if importlib.util.find_spec(m) is None]; "
+        "sys.exit(1 if missing else 0)"
+    )
+    try:
+        result = subprocess.run(
+            [VENV_PYTHON, "-c", code],
+            cwd=SCRIPT_DIR, capture_output=True, timeout=120,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
 def _bootstrap():
     """Create venv + install deps if needed, then relaunch under the venv Python."""
+    env = os.environ.copy()
+    env["PIP_CONFIG_FILE"] = os.devnull  # ignore user/global pip config (e.g. broken NVIDIA index)
+
     if not os.path.isfile(VENV_PYTHON):
         print("Creating virtual environment...")
         subprocess.run([sys.executable, "-m", "venv", ".venv"], cwd=SCRIPT_DIR, check=True)
+
+    if not _deps_installed():
         print("Installing torch - CPU (this may take a few minutes)...")
         subprocess.run(
-            [VENV_PYTHON, "-m", "pip", "install", "--isolated",
+            [VENV_PYTHON, "-m", "pip", "install",
              "--index-url", "https://pypi.org/simple", "torch", "torchvision"],
-            cwd=SCRIPT_DIR, check=True,
+            cwd=SCRIPT_DIR, env=env, check=True,
         )
         print("Installing dependencies...")
         subprocess.run(
-            [VENV_PYTHON, "-m", "pip", "install", "--isolated",
+            [VENV_PYTHON, "-m", "pip", "install",
              "--index-url", "https://pypi.org/simple",
              "-r", os.path.join(SCRIPT_DIR, "requirements.txt")],
-            cwd=SCRIPT_DIR, check=True,
+            cwd=SCRIPT_DIR, env=env, check=True,
         )
 
     if sys.executable.lower() != VENV_PYTHON.lower():
