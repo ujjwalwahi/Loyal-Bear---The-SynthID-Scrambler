@@ -1,10 +1,6 @@
 import os
 import sys
 import subprocess
-import threading
-import tkinter as tk
-import webview
-from PIL import Image, ImageTk
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 VENV_PYTHON = os.path.join(SCRIPT_DIR, ".venv", "Scripts", "python.exe")
@@ -37,6 +33,10 @@ def _bootstrap():
 
 def _show_splash_and_wait():
     """Show the splash with status text; returns True if model loaded OK."""
+    import threading
+    import tkinter as tk
+    from PIL import Image, ImageTk
+
     root = tk.Tk()
     root.overrideredirect(True)
     root.configure(bg="#0d0d1a")
@@ -102,6 +102,8 @@ def main():
         print(f"Failed to load model: {error}")
         input("Press Enter to exit...")
         return
+
+    import webview
 
     from src.gui import build_ui, THEME, CSS
 
