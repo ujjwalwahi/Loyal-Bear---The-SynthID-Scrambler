@@ -14,13 +14,13 @@ def _bootstrap():
         subprocess.run([sys.executable, "-m", "venv", ".venv"], cwd=SCRIPT_DIR, check=True)
         print("Installing torch - CPU (this may take a few minutes)...")
         subprocess.run(
-            [VENV_PYTHON, "-m", "pip", "install",
+            [VENV_PYTHON, "-m", "pip", "install", "--isolated",
              "--index-url", "https://pypi.org/simple", "torch", "torchvision"],
             cwd=SCRIPT_DIR, check=True,
         )
         print("Installing dependencies...")
         subprocess.run(
-            [VENV_PYTHON, "-m", "pip", "install",
+            [VENV_PYTHON, "-m", "pip", "install", "--isolated",
              "--index-url", "https://pypi.org/simple",
              "-r", os.path.join(SCRIPT_DIR, "requirements.txt")],
             cwd=SCRIPT_DIR, check=True,
