@@ -41,6 +41,11 @@ python build_release.py           # compile backend to .pyd
 python build_release.py --restore  # restore source for development
 ```
 
+## Runpod Serverless
+
+The CUDA worker can be deployed as a Runpod Queue endpoint. See the
+[Runpod deployment and request guide](docs/runpod.md).
+
 ## Requirements
 
 - Python 3.10+

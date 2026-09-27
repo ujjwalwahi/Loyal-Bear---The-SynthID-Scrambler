@@ -1,0 +1,17 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.pyd
+*.so
+*.bak
+models
+outputs
+input
+output
+tests
+docs
+batch_runner.py
+build_temp
+src_clean
+LoyalBear.png

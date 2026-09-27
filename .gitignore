@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+models/
+outputs/
+input/
+output/
+build_temp/
+src_clean/
