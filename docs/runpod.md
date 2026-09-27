@@ -4,6 +4,7 @@ The root [Dockerfile](../Dockerfile) builds a CUDA worker for a **Queue**
 endpoint. Its root-level `handler.py` starts `runpod.serverless.start`. The
 worker uses Loyal Bear's existing image pipeline and returns a PNG with image
 metadata removed. The desktop app in `main.py` remains available separately.
+The image uses CUDA 11.8 for compatibility with older NVIDIA drivers.
 
 ## Deploy
 
